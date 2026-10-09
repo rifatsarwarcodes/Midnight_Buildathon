@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+
+# compiler output (regenerate with `npm run compile`; CI does this on every push)
+contract/managed/
+ui/public/keys/
+ui/public/zkir/
+
+# build output
+dist/
+build/
+ui/dist/
+
+# local network state: wallet seeds, deployments, private state stores
+.midnight-state.json
+.midnight-wallet-state/
+*-state/
+cli/disclosures/
+
+# environment and OS
+.env
+.env.*
+.DS_Store
+*.log
+
+# internal research notes, not part of the submission
+research/

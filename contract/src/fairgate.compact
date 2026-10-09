@@ -1,0 +1,318 @@
+// FairGate — zero-knowledge bias-audit attestations for automated hiring tools.
+// Copyright (C) 2026 FairGate contributors
+// SPDX-License-Identifier: Apache-2.0
+//
+// Built for the Midnight Buildathon (AKINDO). Compiles with Compact toolchain 0.31.1
+// (Compact language 0.23). See README.md for the privacy boundary and threat model.
+//
+// What stays private (witness data, never written to the ledger):
+//   - per-group applicant and selection counts of the audited hiring tool
+//   - which demographic groups were included or excluded
+//   - the reference (highest selection rate) group
+//   - the commitment nonce that lets the auditor open the counts to a regulator later
+//
+// What becomes public (ledger):
+//   - that an accredited auditor attested a specific tool for a specific period
+//   - the threshold that was enforced and the exact floor of the minimum impact ratio
+//   - commitments to the dataset and to the counts, so a regulator can verify an
+//     off-chain disclosure against chain state without trusting anyone
+//
+// The audit rule is the "four-fifths rule" from the US EEOC Uniform Guidelines
+// (29 CFR 1607.4(D)), the standard interpretation used for NYC Local Law 144
+// bias audits and for adverse-impact analysis under the EU AI Act. All arithmetic
+// is integer cross-multiplication, so no division happens inside the circuit.
+
+pragma language_version >= 0.22 && <= 0.23;
+
+import CompactStandardLibrary;
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export enum AttestationStatus {
+  Active,
+  Revoked
+}
+
+// Registry-wide policy, set by the registry admin.
+export struct AuditPolicy {
+  // Minimum impact ratio, in percent. 80 is the four-fifths rule.
+  thresholdPct: Uint<8>,
+  // A demographic group must have at least this many applicants to be included.
+  // Smaller groups are excluded so that publishing a result cannot single out an
+  // individual (the LL144 rule allows excluding categories under 2% of the data).
+  minGroupSize: Uint<32>,
+  // The whole audit must cover at least this many applicants.
+  minTotalApplicants: Uint<32>
+}
+
+// The auditor's private workbook. Eight group slots per audit: LL144 defines seven
+// race/ethnicity categories and two sex categories, so one audit covers one
+// protected dimension; run a second attestation for the other.
+export struct AuditWorkbook {
+  applicants: Vector<8, Uint<32>>,
+  selected: Vector<8, Uint<32>>,
+  included: Vector<8, Boolean>,
+  // The reference group (highest selection rate), copied out of the vectors so the
+  // circuit can check every other group against it without dynamic indexing.
+  refApplicants: Uint<32>,
+  refSelected: Uint<32>,
+  // floor(100 * min impact ratio), proven exact by the circuit.
+  minRatioPct: Uint<8>,
+  // Opening for the counts commitment. Revealed to a regulator on request.
+  nonce: Bytes<32>
+}
+
+export struct Tool {
+  employer: Bytes<32>,
+  modelHash: Bytes<32>,
+  metadataHash: Bytes<32>,
+  sequence: Uint<64>
+}
+
+export struct Attestation {
+  toolId: Bytes<32>,
+  auditor: Bytes<32>,
+  datasetCommit: Bytes<32>,
+  countsCommit: Bytes<32>,
+  periodId: Uint<32>,
+  thresholdPct: Uint<8>,
+  minRatioPct: Uint<8>,
+  groupsIncluded: Uint<8>,
+  status: AttestationStatus
+}
+
+// ─── Public state ─────────────────────────────────────────────────────────────
+
+export ledger admin: Bytes<32>;
+export ledger policy: AuditPolicy;
+export ledger auditors: Set<Bytes<32>>;
+export ledger tools: Map<Bytes<32>, Tool>;
+export ledger attestations: Map<Bytes<32>, Attestation>;
+export ledger latestAttestation: Map<Bytes<32>, Bytes<32>>;
+// One attestation per tool per period, whoever the auditor is.
+export ledger periodNullifiers: Set<Bytes<32>>;
+export ledger toolCount: Counter;
+export ledger attestationCount: Counter;
+
+// ─── Private state ────────────────────────────────────────────────────────────
+
+// Every participant (admin, employer, auditor) holds one 32-byte secret locally.
+// All identities are domain-separated hashes of that secret. ownPublicKey() is
+// deliberately not used: it is a prover-claimed value with no binding to the signer.
+witness localSecretKey(): Bytes<32>;
+witness auditWorkbook(): AuditWorkbook;
+
+// ─── Constructor ──────────────────────────────────────────────────────────────
+
+constructor(initialPolicy: AuditPolicy) {
+  admin = disclose(deriveAdminPk(localSecretKey()));
+  assertPolicyValid(initialPolicy);
+  policy = disclose(initialPolicy);
+}
+
+// ─── Pure helpers (exported so TypeScript derives identical values) ───────────
+
+export pure circuit deriveUserPk(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "fairgate:user:v1"), sk]);
+}
+
+export pure circuit deriveAdminPk(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "fairgate:admin:v1"), sk]);
+}
+
+export pure circuit toolIdFor(employer: Bytes<32>, modelHash: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([pad(32, "fairgate:tool:v1"), employer, modelHash]);
+}
+
+export pure circuit periodNullifierFor(toolId: Bytes<32>, periodId: Uint<32>): Bytes<32> {
+  return persistentHash<[Bytes<32>, Bytes<32>, Uint<32>]>([pad(32, "fairgate:period:v1"), toolId, periodId]);
+}
+
+export pure circuit attestationIdFor(toolId: Bytes<32>, auditor: Bytes<32>, periodId: Uint<32>): Bytes<32> {
+  return persistentHash<[Bytes<32>, Bytes<32>, Bytes<32>, Uint<32>]>([
+    pad(32, "fairgate:attest:v1"),
+    toolId,
+    auditor,
+    periodId
+  ]);
+}
+
+export pure circuit countsCommitment(
+  applicants: Vector<8, Uint<32>>,
+  selected: Vector<8, Uint<32>>,
+  included: Vector<8, Boolean>,
+  nonce: Bytes<32>
+): Bytes<32> {
+  return persistentCommit<[Vector<8, Uint<32>>, Vector<8, Uint<32>>, Vector<8, Boolean>]>(
+    [applicants, selected, included],
+    nonce
+  );
+}
+
+// ─── Internal guards ──────────────────────────────────────────────────────────
+
+circuit assertAdmin(): [] {
+  assert(admin == deriveAdminPk(localSecretKey()), "FairGate: caller is not the registry admin");
+}
+
+circuit assertPolicyValid(p: AuditPolicy): [] {
+  assert(p.thresholdPct >= 50 && p.thresholdPct <= 100, "FairGate: threshold must be between 50 and 100 percent");
+  assert(p.minGroupSize >= 1, "FairGate: minimum group size must be at least 1");
+}
+
+// ─── Registry administration ──────────────────────────────────────────────────
+
+export circuit setPolicy(p: AuditPolicy): [] {
+  assertAdmin();
+  assertPolicyValid(p);
+  policy = disclose(p);
+}
+
+export circuit accreditAuditor(auditorPk: Bytes<32>): [] {
+  assertAdmin();
+  const pk = disclose(auditorPk);
+  assert(!auditors.member(pk), "FairGate: auditor already accredited");
+  auditors.insert(pk);
+}
+
+export circuit revokeAuditor(auditorPk: Bytes<32>): [] {
+  assertAdmin();
+  const pk = disclose(auditorPk);
+  assert(auditors.member(pk), "FairGate: auditor is not accredited");
+  auditors.remove(pk);
+}
+
+export circuit rotateAdmin(newAdmin: Bytes<32>): [] {
+  assertAdmin();
+  admin = disclose(newAdmin);
+}
+
+// ─── Employers ────────────────────────────────────────────────────────────────
+
+// Register an automated employment decision tool. The tool id binds the employer's
+// identity to the exact model artifact (hash of weights or container image), so an
+// attestation can never be transferred to a different model.
+export circuit registerTool(modelHash: Bytes<32>, metadataHash: Bytes<32>): Bytes<32> {
+  const employer = deriveUserPk(localSecretKey());
+  const toolId = disclose(toolIdFor(employer, modelHash));
+  assert(!tools.member(toolId), "FairGate: tool already registered");
+  toolCount.increment(1);
+  tools.insert(toolId, Tool {
+    employer: disclose(employer),
+    modelHash: disclose(modelHash),
+    metadataHash: disclose(metadataHash),
+    sequence: toolCount.read()
+  });
+  return toolId;
+}
+
+// ─── Auditors ─────────────────────────────────────────────────────────────────
+
+// Attest that `toolId` passed a four-fifths impact-ratio audit for `periodId`.
+// The counts never leave the auditor's machine. If any check fails no proof can be
+// built, so a failing tool simply cannot obtain an attestation.
+export circuit attestAudit(toolId: Bytes<32>, periodId: Uint<32>, datasetCommit: Bytes<32>): Bytes<32> {
+  // Who is attesting, and are they allowed to?
+  const auditorPub = disclose(deriveUserPk(localSecretKey()));
+  assert(auditors.member(auditorPub), "FairGate: auditor is not accredited");
+
+  // Which tool, and has this period already been attested?
+  const toolPub = disclose(toolId);
+  assert(tools.member(toolPub), "FairGate: unknown tool");
+  const periodPub = disclose(periodId);
+  const nullifier = periodNullifierFor(toolPub, periodPub);
+  assert(!periodNullifiers.member(nullifier), "FairGate: tool already attested for this period");
+
+  const wb = auditWorkbook();
+  const pol = policy;
+  const threshold = pol.thresholdPct;
+  const refA = wb.refApplicants;
+  const refS = wb.refSelected;
+  const p = wb.minRatioPct;
+
+  // 1. Shape: counts are consistent and the inclusion mask follows the policy.
+  //    An auditor cannot quietly drop a large group that would fail the test.
+  for (const i of 0..8) {
+    assert(wb.selected[i] <= wb.applicants[i], "FairGate: selected exceeds applicants");
+    assert(!wb.included[i] || wb.applicants[i] >= pol.minGroupSize, "FairGate: included group is below the minimum size");
+    assert(wb.included[i] || wb.applicants[i] < pol.minGroupSize, "FairGate: a group large enough to include was excluded");
+  }
+
+  // 2. Coverage.
+  const total = fold((acc: Uint<64>, a: Uint<32>): Uint<64> => (acc + a) as Uint<64>, 0, wb.applicants);
+  assert(total >= pol.minTotalApplicants, "FairGate: audit covers too few applicants");
+  const groups = fold((acc: Uint<8>, inc: Boolean): Uint<8> => (acc + (inc ? 1 : 0)) as Uint<8>, 0, wb.included);
+  assert(groups >= 2, "FairGate: at least two groups are required");
+
+  // 3. The reference group is a real included group and selected somebody.
+  assert(refS > 0, "FairGate: reference group selected nobody");
+  const refExists = fold(
+    (acc: Boolean, a: Uint<32>, s: Uint<32>, inc: Boolean): Boolean => acc || (inc && a == refA && s == refS),
+    false,
+    wb.applicants, wb.selected, wb.included
+  );
+  assert(refExists, "FairGate: reference group is not one of the included groups");
+
+  // 4. The reference group has the highest selection rate:
+  //    refS/refA >= s_i/a_i  <=>  refS * a_i >= s_i * refA
+  for (const i of 0..8) {
+    assert(!wb.included[i] || refS * wb.applicants[i] >= wb.selected[i] * refA,
+      "FairGate: reference group does not have the highest selection rate");
+  }
+
+  // 5. Four-fifths rule for every included group:
+  //    (s_i/a_i) / (refS/refA) >= T/100  <=>  100 * s_i * refA >= T * refS * a_i
+  for (const i of 0..8) {
+    assert(!wb.included[i] || 100 * wb.selected[i] * refA >= threshold * refS * wb.applicants[i],
+      "FairGate: impact ratio below threshold");
+  }
+
+  // 6. The published minimum impact ratio is exactly floor(100 * min_i ratio_i):
+  //    every group is at or above p percent, and at least one is below p+1 percent.
+  assert(p >= threshold && p <= 100, "FairGate: minimum impact ratio out of range");
+  for (const i of 0..8) {
+    assert(!wb.included[i] || 100 * wb.selected[i] * refA >= p * refS * wb.applicants[i],
+      "FairGate: claimed minimum impact ratio is too high");
+  }
+  const tight = fold(
+    (acc: Boolean, a: Uint<32>, s: Uint<32>, inc: Boolean): Boolean =>
+      acc || (inc && 100 * s * refA < (p + 1) * refS * a),
+    false,
+    wb.applicants, wb.selected, wb.included
+  );
+  assert(tight, "FairGate: claimed minimum impact ratio is too low");
+
+  // 7. Record. Only commitments and the proven summary reach the ledger.
+  const countsCommit = disclose(countsCommitment(wb.applicants, wb.selected, wb.included, wb.nonce));
+  const attestationId = attestationIdFor(toolPub, auditorPub, periodPub);
+  periodNullifiers.insert(nullifier);
+  attestationCount.increment(1);
+  attestations.insert(attestationId, Attestation {
+    toolId: toolPub,
+    auditor: auditorPub,
+    datasetCommit: disclose(datasetCommit),
+    countsCommit: countsCommit,
+    periodId: periodPub,
+    thresholdPct: threshold,
+    minRatioPct: disclose(p),
+    groupsIncluded: disclose(groups),
+    status: AttestationStatus.Active
+  });
+  latestAttestation.insert(toolPub, attestationId);
+  return attestationId;
+}
+
+// The issuing auditor, or the registry admin, can withdraw an attestation. The
+// period nullifier stays spent: a revoked tool cannot shop for a second attestation
+// in the same period.
+export circuit revokeAttestation(attestationId: Bytes<32>): [] {
+  const id = disclose(attestationId);
+  assert(attestations.member(id), "FairGate: unknown attestation");
+  const att = attestations.lookup(id);
+  const sk = localSecretKey();
+  const isIssuer = deriveUserPk(sk) == att.auditor;
+  const isAdmin = deriveAdminPk(sk) == admin;
+  assert(isIssuer || isAdmin, "FairGate: only the issuing auditor or the admin can revoke");
+  assert(att.status == AttestationStatus.Active, "FairGate: attestation already revoked");
+  attestations.insert(id, Attestation { ...att, status: AttestationStatus.Revoked });
+}

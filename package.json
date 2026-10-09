@@ -1,0 +1,25 @@
+{
+  "name": "fairgate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "FairGate: zero-knowledge bias-audit attestations for automated hiring tools on Midnight",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "contract",
+    "cli",
+    "ui"
+  ],
+  "scripts": {
+    "compile": "npm run compact -w contract",
+    "test": "npm run test -w contract",
+    "devnet:up": "npm run devnet:up -w cli",
+    "devnet:down": "npm run devnet:down -w cli",
+    "deploy": "npm run deploy -w cli",
+    "cli": "npm run cli -w cli",
+    "ui": "npm run dev -w ui"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
