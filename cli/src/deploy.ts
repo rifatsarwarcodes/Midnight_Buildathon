@@ -79,12 +79,20 @@ async function main() {
   console.log('  ℹ  This may take several minutes depending on network size.');
   console.log('     RPC disconnection messages during sync are normal and can be safely ignored.\n');
   const syncStart = Date.now();
-  const syncInterval = setInterval(() => {
+  // Progress is reported every 30 s so a slow first sync on a public network is
+  // observable (shielded and dust scans run separately and the dust scan is slower).
+  const dumpErr = (v: unknown) => JSON.stringify(v, (_k, x) => (typeof x === 'bigint' ? x.toString() : x), 1);
+  const origErr = console.error.bind(console);
+  console.error = (...args: unknown[]) => origErr(...args.map((a) => (typeof a === 'object' && a !== null && !(a instanceof Error) ? dumpErr(a).slice(0, 3000) : a)));
+  const progressSub = (walletCtx.wallet.state() as any).pipe(Rx.throttleTime(30_000)).subscribe((s: any) => {
     const elapsed = Math.round((Date.now() - syncStart) / 1000);
-    process.stdout.write(`\r  ⏳ Still syncing... (${elapsed}s elapsed)   `);
-  }, 5000);
+    const sh = s.shielded?.progress ?? {};
+    const du = s.dust?.progress ?? {};
+    const un = s.unshielded?.progress ?? {};
+    console.log(`  ⏳ ${elapsed}s  shielded ${sh.appliedIndex}/${sh.highestRelevantWalletIndex}  dust ${du.appliedIndex}/${du.highestRelevantWalletIndex}  unshielded ${un.appliedId}/${un.highestTransactionId}  synced=${s.isSynced}`);
+  });
   const state = await walletCtx.wallet.waitForSyncedState();
-  clearInterval(syncInterval);
+  progressSub.unsubscribe();
   process.stdout.write('\r  ✓ Synced with network.                                      \n');
 
   // Persist sync state now so a later deploy failure doesn't waste the sync work.
