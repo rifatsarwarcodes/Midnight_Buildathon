@@ -9,7 +9,7 @@
     "devnet:down": "docker compose down -v",
     "setup": "npx tsx src/setup.ts",
     "deploy": "npx tsx src/deploy.ts",
-    "cli": "npx tsx src/cli.ts",
+    "cli": "npx tsx src/fairgate.ts",
     "check-balance": "npx tsx src/check-balance.ts",
     "network": "npx tsx src/network.ts",
     "clean": "node scripts/clean.mjs",

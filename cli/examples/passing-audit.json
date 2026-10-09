@@ -1,0 +1,12 @@
+{
+  "dimension": "race/ethnicity (NYC LL144 categories)",
+  "groups": [
+    { "label": "Hispanic or Latino",            "applicants": 412, "selected": 66 },
+    { "label": "White",                         "applicants": 1180, "selected": 212 },
+    { "label": "Black or African American",     "applicants": 538, "selected": 84 },
+    { "label": "Native Hawaiian / Pacific Isl.", "applicants": 7,   "selected": 1 },
+    { "label": "Asian",                         "applicants": 644, "selected": 110 },
+    { "label": "Native American / Alaska Nat.", "applicants": 23,  "selected": 4 },
+    { "label": "Two or more races",             "applicants": 96,  "selected": 15 }
+  ]
+}

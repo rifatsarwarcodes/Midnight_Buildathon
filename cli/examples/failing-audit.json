@@ -1,0 +1,7 @@
+{
+  "dimension": "sex (NYC LL144 categories)",
+  "groups": [
+    { "label": "Male",   "applicants": 1620, "selected": 310 },
+    { "label": "Female", "applicants": 1280, "selected": 178 }
+  ]
+}

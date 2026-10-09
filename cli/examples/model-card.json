@@ -1,0 +1,7 @@
+{
+  "tool": "ResumeRank v3.2",
+  "vendor": "Acme Talent Systems",
+  "artifact": "sha256 of the exported model weights goes in --model-file; this file is the --meta-file",
+  "intended_use": "Rank incoming applications for software engineering roles",
+  "training_cutoff": "2026-06-30"
+}

@@ -25,3 +25,6 @@ cli/disclosures/
 
 # internal research notes, not part of the submission
 research/
+
+# local role identities (admin/employer/auditor secrets)
+cli/.fairgate-identities.json
