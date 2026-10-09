@@ -1,0 +1,145 @@
+{
+  "hash": "cfaab553",
+  "configHash": "6dc76c39",
+  "lockfileHash": "a054909d",
+  "browserHash": "988c38e4",
+  "optimized": {
+    "@midnight-ntwrk/compact-runtime": {
+      "src": "../../../node_modules/@midnight-ntwrk/compact-runtime/dist/index.js",
+      "file": "@midnight-ntwrk_compact-runtime.js",
+      "fileHash": "f872cae8",
+      "needsInterop": false
+    },
+    "react": {
+      "src": "../../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "a409942f",
+      "needsInterop": true
+    },
+    "react-dom": {
+      "src": "../../../node_modules/react-dom/index.js",
+      "file": "react-dom.js",
+      "fileHash": "06123591",
+      "needsInterop": true
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "81e76603",
+      "needsInterop": true
+    },
+    "react/jsx-runtime": {
+      "src": "../../../node_modules/react/jsx-runtime.js",
+      "file": "react_jsx-runtime.js",
+      "fileHash": "da2d9c20",
+      "needsInterop": true
+    },
+    "@midnight-ntwrk/midnight-js-contracts": {
+      "src": "../../../node_modules/@midnight-ntwrk/midnight-js-contracts/dist/index.mjs",
+      "file": "@midnight-ntwrk_midnight-js-contracts.js",
+      "fileHash": "bc5ed910",
+      "needsInterop": false
+    },
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": {
+      "src": "../../../node_modules/@midnight-ntwrk/midnight-js-fetch-zk-config-provider/dist/index.mjs",
+      "file": "@midnight-ntwrk_midnight-js-fetch-zk-config-provider.js",
+      "fileHash": "565d9c0c",
+      "needsInterop": false
+    },
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": {
+      "src": "../../../node_modules/@midnight-ntwrk/midnight-js-http-client-proof-provider/dist/index.mjs",
+      "file": "@midnight-ntwrk_midnight-js-http-client-proof-provider.js",
+      "fileHash": "03b9649a",
+      "needsInterop": false
+    },
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": {
+      "src": "../../../node_modules/@midnight-ntwrk/midnight-js-indexer-public-data-provider/dist/index.mjs",
+      "file": "@midnight-ntwrk_midnight-js-indexer-public-data-provider.js",
+      "fileHash": "8a38f149",
+      "needsInterop": false
+    },
+    "@midnight-ntwrk/midnight-js-network-id": {
+      "src": "../../../node_modules/@midnight-ntwrk/midnight-js-network-id/dist/index.mjs",
+      "file": "@midnight-ntwrk_midnight-js-network-id.js",
+      "fileHash": "1c14af37",
+      "needsInterop": false
+    },
+    "@midnight-ntwrk/midnight-js-protocol/compact-js": {
+      "src": "../../../node_modules/@midnight-ntwrk/midnight-js-protocol/dist/compact-js.mjs",
+      "file": "@midnight-ntwrk_midnight-js-protocol_compact-js.js",
+      "fileHash": "da799f87",
+      "needsInterop": false
+    },
+    "@midnight-ntwrk/midnight-js-protocol/compact-runtime": {
+      "src": "../../../node_modules/@midnight-ntwrk/midnight-js-protocol/dist/compact-runtime.mjs",
+      "file": "@midnight-ntwrk_midnight-js-protocol_compact-runtime.js",
+      "fileHash": "cc8cdd68",
+      "needsInterop": false
+    },
+    "@midnight-ntwrk/midnight-js-protocol/ledger": {
+      "src": "../../../node_modules/@midnight-ntwrk/midnight-js-protocol/dist/ledger.mjs",
+      "file": "@midnight-ntwrk_midnight-js-protocol_ledger.js",
+      "fileHash": "d11c09e1",
+      "needsInterop": false
+    },
+    "buffer": {
+      "src": "../../../node_modules/buffer/index.js",
+      "file": "buffer.js",
+      "fileHash": "981e86ba",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "85002e37",
+      "needsInterop": true
+    },
+    "semver": {
+      "src": "../../../node_modules/semver/index.js",
+      "file": "semver.js",
+      "fileHash": "6a8463a6",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-HZGPFD4M": {
+      "file": "chunk-HZGPFD4M.js"
+    },
+    "chunk-NGPPUN7N": {
+      "file": "chunk-NGPPUN7N.js"
+    },
+    "chunk-OBO3OFS7": {
+      "file": "chunk-OBO3OFS7.js"
+    },
+    "chunk-ZG2UH7VP": {
+      "file": "chunk-ZG2UH7VP.js"
+    },
+    "chunk-XGIZIQI6": {
+      "file": "chunk-XGIZIQI6.js"
+    },
+    "chunk-T4YV2RTF": {
+      "file": "chunk-T4YV2RTF.js"
+    },
+    "chunk-AIDRHSTV": {
+      "file": "chunk-AIDRHSTV.js"
+    },
+    "chunk-QZY3V4PQ": {
+      "file": "chunk-QZY3V4PQ.js"
+    },
+    "chunk-ZE5CWEDW": {
+      "file": "chunk-ZE5CWEDW.js"
+    },
+    "chunk-PXOFHEFC": {
+      "file": "chunk-PXOFHEFC.js"
+    },
+    "chunk-OF7VIQRH": {
+      "file": "chunk-OF7VIQRH.js"
+    },
+    "chunk-MYLVD5OR": {
+      "file": "chunk-MYLVD5OR.js"
+    },
+    "chunk-EF3O5H2F": {
+      "file": "chunk-EF3O5H2F.js"
+    }
+  }
+}

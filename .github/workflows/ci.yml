@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contract:
+    name: Compile contract and run simulator tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Compact compiler (pinned to the Preprod compatibility matrix)
+        uses: midnightntwrk/setup-compact-action@v1
+        with:
+          compact-version: '0.31.1'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Compile fairgate.compact
+        run: |
+          compact compile --version
+          npm run compile
+
+      - name: Typecheck
+        run: |
+          npm run typecheck -w contract
+          npx tsc --noEmit -p cli/tsconfig.json
+
+      - name: Run contract tests
+        run: npm test
+
+      - name: Report circuit sizes
+        run: ls -la contract/managed/fairgate/keys
