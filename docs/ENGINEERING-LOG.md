@@ -174,12 +174,20 @@ server, and a ledger/proof-server minor-version mismatch is the leading
 explanation. Status: **open**. Fix requires replacing the container with 8.1.3,
 which is blocked by Failure 10.
 
-**Failure 10: Docker daemon unresponsive.** From ~02:40 the Docker CLI hangs on
+**Failure 10: Docker daemon unresponsive.** From ~02:40 the Docker CLI hung on
 `docker ps` / `docker info` (hard 20 s timeouts), although the already-running
-proof-server container still answers HTTP on port 6300 and the devnet indexer
+proof-server container still answered HTTP on port 6300 and the devnet indexer
 stopped answering. Not restarted automatically because unrelated containers of
-the user run on the same daemon. Status: **open, needs a Docker Desktop
-restart**.
+the user run on the same daemon. Resolved on Oct 12 by the user restarting the
+machine; Docker 28.3.3 came back healthy.
+
+**Fix attempt for Failure 9 (Oct 12).** `cli/docker-compose.yml` now pins
+`midnightntwrk/proof-server:8.1.3`. Supporting evidence: ledger 8.1.2 release
+notes introduce stricter transaction decoding ("an 8.1.2 node rejects data an
+8.1.1 node accepts"), the same class as "bad input". Started the container with
+`docker compose up -d --wait proof-server` and re-ran
+`npm run deploy -- --network preview`; the wallet restored from the saved sync
+state instead of rescanning.
 
 - Preprod deploy was started in parallel and then stopped deliberately to reduce
   concurrent connections; it will be run after Preview succeeds, reusing the
