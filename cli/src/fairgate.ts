@@ -155,6 +155,25 @@ async function connect(network: ReturnType<typeof resolveNetwork>['network'], ne
   return { deployment, walletCtx, providers, contract: contract as any, secret, privateStateId };
 }
 
+// Public RPC WebSockets occasionally close while a transaction is being submitted
+// (seen on Preview: "disconnected from wss://rpc.preview.midnight.network/: 1000").
+// The proof is cheap to redo compared with a failed demo, so retry transient
+// submission errors a few times. Non-transient errors (assertion failures from
+// the circuit, "already attested") surface immediately.
+async function submitWithRetry(label: string, fn: () => Promise<any>, attempts = 3): Promise<any> {
+  for (let i = 1; ; i++) {
+    try {
+      return await fn();
+    } catch (e: any) {
+      const text = `${e?.message ?? ''} ${e?.cause?.message ?? ''} ${e?.cause?.cause?.message ?? ''}`;
+      const transient = /SubmissionError|disconnected from|Normal Closure|ECONNRESET|socket hang up|fetch failed/i.test(text);
+      if (!transient || i >= attempts) throw e;
+      console.log(`\n  ${label}: submission failed on a dropped connection (attempt ${i}/${attempts}). Retrying in 10 s...`);
+      await new Promise((r) => setTimeout(r, 10_000));
+    }
+  }
+}
+
 function printTx(label: string, tx: any) {
   console.log(`\n  ${label}`);
   console.log(`  tx id:        ${tx.public.txId}`);
@@ -208,13 +227,13 @@ async function cmdAdmin(args: Args) {
     switch (sub) {
       case 'accredit': {
         const pk = fromHex(args.positional[2] ?? die('usage: admin accredit <auditorPkHex>'));
-        const tx = await contract.callTx.accreditAuditor(pk);
+        const tx = await submitWithRetry('accreditAuditor', () => contract.callTx.accreditAuditor(pk));
         printTx(`Accredited auditor ${toHex(pk)}`, tx);
         break;
       }
       case 'revoke-auditor': {
         const pk = fromHex(args.positional[2] ?? die('usage: admin revoke-auditor <auditorPkHex>'));
-        const tx = await contract.callTx.revokeAuditor(pk);
+        const tx = await submitWithRetry('revokeAuditor', () => contract.callTx.revokeAuditor(pk));
         printTx(`Revoked auditor ${toHex(pk)}`, tx);
         break;
       }
@@ -222,7 +241,7 @@ async function cmdAdmin(args: Args) {
         const [t, g, n] = args.positional.slice(2);
         if (!t || !g || !n) die('usage: admin set-policy <thresholdPct> <minGroupSize> <minTotalApplicants>');
         const policy: AuditPolicy = { thresholdPct: BigInt(t), minGroupSize: BigInt(g), minTotalApplicants: BigInt(n) };
-        const tx = await contract.callTx.setPolicy(policy);
+        const tx = await submitWithRetry('setPolicy', () => contract.callTx.setPolicy(policy));
         printTx(`Policy set to threshold ${t}%, min group ${g}, min applicants ${n}`, tx);
         break;
       }
@@ -249,7 +268,7 @@ async function cmdEmployer(args: Args) {
     console.log(`  model hash:    ${toHex(modelHash)}`);
     console.log(`  metadata hash: ${toHex(metaHash)}`);
     console.log('  Proving and submitting (30-90 seconds)...');
-    const tx = await contract.callTx.registerTool(modelHash, metaHash);
+    const tx = await submitWithRetry('registerTool', () => contract.callTx.registerTool(modelHash, metaHash));
     printTx(`Tool registered. toolId ${toHex(tx.private.result)}`, tx);
   } finally {
     await persistWalletState(network, walletCtx);
@@ -296,7 +315,7 @@ async function cmdAuditor(args: Args) {
     const id = fromHex(args.positional[2] ?? die('usage: auditor revoke <attestationIdHex>'));
     const { walletCtx, contract } = await connect(network, config, role);
     try {
-      const tx = await contract.callTx.revokeAttestation(id);
+      const tx = await submitWithRetry('revokeAttestation', () => contract.callTx.revokeAttestation(id));
       printTx(`Attestation ${toHex(id)} revoked`, tx);
     } finally {
       await persistWalletState(network, walletCtx);
@@ -333,7 +352,7 @@ async function cmdAuditor(args: Args) {
     providers.privateStateProvider.setContractAddress(deployment.address);
     await providers.privateStateProvider.set(privateStateId, createFairGatePrivateState(secret, workbook));
     console.log('\n  Proving the four-fifths rule and submitting (60-120 seconds)...');
-    const tx = await contract.callTx.attestAudit(toolId, periodId, datasetCommit);
+    const tx = await submitWithRetry('attestAudit', () => contract.callTx.attestAudit(toolId, periodId, datasetCommit));
     // Scrub the workbook from the stored private state once the proof is made.
     await providers.privateStateProvider.set(privateStateId, createFairGatePrivateState(secret));
 

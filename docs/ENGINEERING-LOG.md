@@ -205,7 +205,7 @@ on the first `attestAudit` submission on Preview. The proof was generated (about
 transaction landed and no nullifier was spent, so the command was simply rerun
 and succeeded (tx `02afe388…b6c3`, block 1262094). The CLI already scrubs the
 workbook from private state only after success, so a retry needs no extra steps.
-A retry-on-submit loop is a candidate improvement.
+Fix: `cli/src/fairgate.ts` now wraps every `callTx` in `submitWithRetry` (3 attempts, 10 s apart) for transient submission errors only; circuit assertion failures still surface immediately.
 
 **Observation: two transaction identifiers.** Midnight.js `FinalizedTxData.txId`
 is a 33-byte identifier (66 hex chars, `00` prefix). The indexer and the
@@ -243,4 +243,7 @@ attempted. Preprod is optional for Wave 2 since Preview is a public network.
 | Fill `DEPLOYMENTS.md`, `ui/.env` contract address, `docs/SUBMISSION.md` links | agent | done for Preview |
 | Add `midnightntwrk` and other GitHub topics | user (no token on this machine) | pending |
 | Record the demo video from `docs/DEMO.md` | user | pending |
-| Host the UI (Vercel) and link it | agent/user | pending |
+| Host the UI: GitHub Pages workflow committed; user must enable Pages (source: GitHub Actions) | user | pending |
+| Lace end-to-end test of the UI on Preview (needs the user's Lace wallet) | user, then agent fixes | pending |
+| Demo video per docs/DEMO.md | user | pending |
+| AKINDO submission text: fill video and UI URLs | agent | pending on the above |
