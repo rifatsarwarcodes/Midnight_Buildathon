@@ -259,6 +259,14 @@ sweep on hex values. Tabs are deep-linkable with `?tab=auditor` etc. Verified
 with headless-Chrome screenshots at 1400 px; fixed two issues found there
 (narrow group-name inputs, invisible preset buttons).
 
+Light mode added the same day: cream paper (`#f3eee4`), ink text, olive verdict
+colour (`#3f7a00`) for contrast, same layout and type. It follows the system
+preference by default; a plain mono "switch to light/dark" control in the ticker
+overrides it and remembers the choice in localStorage; `?theme=light|dark` forces
+it for links and screenshots. The purple private pane was replaced by graphite
+with a faint hatch so the private/public split reads as redaction versus stamp
+rather than a template gradient. Both modes screenshot-checked.
+
 ## 8. Open items
 
 | Item | Owner | Status |

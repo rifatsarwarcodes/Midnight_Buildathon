@@ -19,14 +19,66 @@
   --oxblood-dim: rgba(224, 80, 63, 0.16);
   --seal: #f0b429;
   --seal-dim: rgba(240, 180, 41, 0.16);
-  --private: #2b1f3a;
-  --private-edge: #6a4f8f;
+  --private: #1a1c22;
+  --private-edge: #4a4f5c;
   --public: #0f2a2c;
   --public-edge: #2f8f8a;
   --display: 'Young Serif', 'Iowan Old Style', Georgia, serif;
   --serif: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
   --mono: 'Martian Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+
+/* Light: the same dossier on cream paper. Applied when the system prefers light
+   (unless the reader chose dark) or when the reader chose light. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --ink-0: #f3eee4;
+    --ink-1: #faf7f1;
+    --ink-2: #ffffff;
+    --ink-3: #ece6d9;
+    --rule: #ddd5c5;
+    --rule-strong: #c3b9a4;
+    --paper: #17181c;
+    --paper-dim: #4d4e56;
+    --paper-mute: #7d786b;
+    --verdict: #3f7a00;
+    --verdict-ink: #ffffff;
+    --verdict-dim: rgba(120, 170, 0, 0.18);
+    --oxblood: #b02e22;
+    --oxblood-dim: rgba(176, 46, 34, 0.12);
+    --seal: #8a5a00;
+    --seal-dim: rgba(240, 180, 41, 0.22);
+    --private: #ebe6dc;
+    --private-edge: #a89f8c;
+    --public: #e3efed;
+    --public-edge: #2f8f8a;
+    color-scheme: light;
+  }
+}
+:root[data-theme='light'] {
+  --ink-0: #f3eee4;
+  --ink-1: #faf7f1;
+  --ink-2: #ffffff;
+  --ink-3: #ece6d9;
+  --rule: #ddd5c5;
+  --rule-strong: #c3b9a4;
+  --paper: #17181c;
+  --paper-dim: #4d4e56;
+  --paper-mute: #7d786b;
+  --verdict: #3f7a00;
+  --verdict-ink: #ffffff;
+  --verdict-dim: rgba(120, 170, 0, 0.18);
+  --oxblood: #b02e22;
+  --oxblood-dim: rgba(176, 46, 34, 0.12);
+  --seal: #8a5a00;
+  --seal-dim: rgba(240, 180, 41, 0.22);
+  --private: #ebe6dc;
+  --private-edge: #a89f8c;
+  --public: #e3efed;
+  --public-edge: #2f8f8a;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }
@@ -53,6 +105,8 @@ body::before {
     radial-gradient(700px 420px at 100% 110%, rgba(240, 180, 41, 0.12), transparent 60%),
     var(--ink-0);
 }
+:root[data-theme='light'] body::before { background: radial-gradient(900px 500px at 8% -10%, rgba(47, 143, 138, 0.14), transparent 60%), radial-gradient(700px 420px at 100% 110%, rgba(240, 180, 41, 0.18), transparent 60%), var(--ink-0); }
+@media (prefers-color-scheme: light) { :root:not([data-theme='dark']) body::before { background: radial-gradient(900px 500px at 8% -10%, rgba(47, 143, 138, 0.14), transparent 60%), radial-gradient(700px 420px at 100% 110%, rgba(240, 180, 41, 0.18), transparent 60%), var(--ink-0); } }
 body::after {
   content: '';
   position: fixed;
@@ -60,8 +114,8 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background-image:
-    repeating-linear-gradient(0deg, transparent 0 31px, rgba(236, 230, 216, 0.045) 31px 32px),
-    repeating-linear-gradient(90deg, transparent 0 31px, rgba(236, 230, 216, 0.03) 31px 32px);
+    repeating-linear-gradient(0deg, transparent 0 31px, color-mix(in srgb, var(--paper) 7%, transparent) 31px 32px),
+    repeating-linear-gradient(90deg, transparent 0 31px, color-mix(in srgb, var(--paper) 5%, transparent) 31px 32px);
   mask-image: radial-gradient(1200px 700px at 30% 0%, #000 20%, transparent 75%);
 }
 
@@ -174,11 +228,11 @@ p { margin: 0.4rem 0; }
 @media (min-width: 1100px) { .grid.two { grid-template-columns: 1.15fr 1fr; } }
 .card {
   position: relative;
-  background: linear-gradient(180deg, var(--ink-2), var(--ink-1));
+  background: var(--ink-2);
   border: 1px solid var(--rule);
   border-radius: 4px;
   padding: 1.3rem 1.4rem 1.4rem;
-  box-shadow: 0 1px 0 rgba(236, 230, 216, 0.04) inset, 0 20px 50px -30px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 14px 40px -30px rgba(0, 0, 0, 0.55);
 }
 .card::before {
   content: '';
@@ -297,7 +351,7 @@ button.ghost:hover { color: var(--verdict); transform: none; }
 .notice strong { font-family: var(--display); font-weight: 400; }
 .notice-info { border-color: var(--public-edge); background: var(--public); }
 .notice-ok { border-color: var(--verdict); background: var(--verdict-dim); }
-.notice-error { border-color: var(--oxblood); background: var(--oxblood-dim); color: #ffb3aa; }
+.notice-error { border-color: var(--oxblood); background: var(--oxblood-dim); color: var(--oxblood); }
 
 /* Tables as ledger pages */
 table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.92rem; }
@@ -324,11 +378,11 @@ table.editor td { padding: 0.2rem 0.3rem; border-bottom-color: var(--rule); }
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: repeating-linear-gradient(135deg, transparent 0 10px, rgba(106, 79, 143, 0.14) 10px 11px);
+  background: repeating-linear-gradient(135deg, transparent 0 10px, rgba(236, 230, 216, 0.06) 10px 11px);
 }
-.pane.private h5 { color: #c9b3ec; }
+.pane.private h5 { color: var(--paper-dim); }
 .pane.public { background: var(--public); border-color: var(--public-edge); }
-.pane.public h5 { color: #8fe0da; }
+.pane.public h5 { color: var(--public-edge); }
 
 .redact {
   display: inline-block;
@@ -380,3 +434,16 @@ table.editor th:nth-child(4) { width: 36px; }
 
 /* Cards in a row should not stretch to the tallest sibling. */
 .grid { align-items: start; }
+
+/* Theme switch: a plain mono control in the ticker, no icons. */
+.theme-switch {
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  color: var(--paper-dim);
+  padding: 0.25rem 0.55rem;
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.theme-switch:hover { color: var(--paper); transform: none; }
