@@ -38,7 +38,7 @@ open.
 | `contract/` | `fairgate.compact` (7 circuits, 6 exported pure helpers), witnesses, off-chain audit arithmetic, 40 simulator tests incl. 12 lying-witness attacks | compiles, tests pass |
 | `cli/` | deploy script, role-scoped commands for admin / employer / auditor / verifier, disclosure packets, local devnet compose | verified end to end on the local devnet |
 | `ui/` | React front end: Verify (no wallet), Auditor workbench with a private/public split, Employer, Regulator packet verifier, Admin; Lace wallet via DApp Connector 4.x | live at https://rifatsarwarcodes.github.io/Midnight_Buildathon/ |
-| `docs/` | [Privacy boundary](docs/PRIVACY-BOUNDARY.md), [Threat model](docs/THREAT-MODEL.md), [deck](docs/deck/), [demo script](docs/DEMO.md) | |
+| `docs/` | [Explainer from zero](docs/EXPLAINER.md), [Privacy boundary](docs/PRIVACY-BOUNDARY.md), [Threat model](docs/THREAT-MODEL.md), [deck](docs/deck/), [demo script](docs/DEMO.md) | |
 | `.github/workflows/` | CI: install Compact 0.31.1, compile, typecheck, run tests | |
 
 ## How judges can evaluate this in 10 minutes
