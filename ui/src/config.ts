@@ -9,8 +9,10 @@ export const config = {
   proofServerUrl: ((import.meta.env.VITE_PROOF_SERVER_URL as string) || '').trim(),
 };
 
+// Midnight.js returns a 33-byte transaction identifier; the explorer resolves the
+// 32-byte transaction hash. Only link when the value is a 64-hex hash.
 export const explorerTxUrl = (txId: string): string | null =>
-  config.networkId === 'preprod'
+  !/^[0-9a-f]{64}$/i.test(txId) ? null : config.networkId === 'preprod'
     ? `https://preprod.midnightexplorer.com/transactions/${txId}`
     : config.networkId === 'preview'
       ? `https://preview.midnightexplorer.com/transactions/${txId}`

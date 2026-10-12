@@ -194,14 +194,40 @@ state instead of rescanning.
   same approach. Preprod wallet:
   `mn_addr_preprod16trexelxj0x2rs79u3j8a6zw7yfjfk4glz3qlme74armmskxjlwqhzngjv`.
 
+**Result (Oct 12).** With proof-server 8.1.3 the deploy succeeded on the first
+attempt: Preview registry `170ed2cd…cca8`, deploy tx `932f1b2e…78e8` at block
+1262055. The hypothesis in Failure 9 held: 8.1.0 cannot prove transactions for a
+chain running ledger 8.1.2+ decoding rules.
+
+**Failure 11: `SubmissionError … disconnected from wss://rpc.preview.midnight.network/: 1000 Normal Closure`**
+on the first `attestAudit` submission on Preview. The proof was generated (about
+60 s) and the RPC WebSocket closed while submitting. `verify tool` confirmed no
+transaction landed and no nullifier was spent, so the command was simply rerun
+and succeeded (tx `02afe388…b6c3`, block 1262094). The CLI already scrubs the
+workbook from private state only after success, so a retry needs no extra steps.
+A retry-on-submit loop is a candidate improvement.
+
+**Observation: two transaction identifiers.** Midnight.js `FinalizedTxData.txId`
+is a 33-byte identifier (66 hex chars, `00` prefix). The indexer and the
+explorer key transactions by the 32-byte hash. The canonical hashes were
+recovered with the indexer query
+`contract(address) { actions(limit) { transaction { hash block { height } } } }`
+and are what `DEPLOYMENTS.md` links. The UI only renders an explorer link for
+64-hex values.
+
+**Preview flow timings (Oct 12).** Wallet restore from saved state: seconds.
+accreditAuditor, registerTool: about 40 s each including proof and inclusion.
+attestAudit: about 70 s. Blocks on Preview are roughly 6 s apart.
+
 ## 8. Open items
 
 | Item | Owner | Status |
 |---|---|---|
 | Restart Docker Desktop, start proof-server 8.1.3 on port 6300 | user (machine owner) | pending |
-| Re-run `npm run deploy -- --network preview` (fast: wallet state restored) | agent | pending on the above |
-| Preprod deploy, same flow | agent | pending |
-| Fill `DEPLOYMENTS.md`, `ui/.env` contract address, `docs/SUBMISSION.md` links | agent | pending |
+| Re-run `npm run deploy -- --network preview` | agent | done 2026-10-12 |
+| Preview: accredit, register, attest, verify, tampered packet | agent | done 2026-10-12 |
+| Preprod deploy, same flow | agent + user funds `mn_addr_preprod16tr…ngjv` | sync running |
+| Fill `DEPLOYMENTS.md`, `ui/.env` contract address, `docs/SUBMISSION.md` links | agent | done for Preview |
 | Add `midnightntwrk` and other GitHub topics | user (no token on this machine) | pending |
 | Record the demo video from `docs/DEMO.md` | user | pending |
 | Host the UI (Vercel) and link it | agent/user | pending |

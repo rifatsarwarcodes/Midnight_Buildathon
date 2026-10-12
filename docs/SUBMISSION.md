@@ -51,8 +51,10 @@ the people private.
    with no wallet, Auditor workbench with a live private/public split and
    "prove and attest with Lace", Employer registration, Regulator packet verifier,
    Admin. Reads the ledger directly from the public indexer.
-5. *Public network*: registry deployed on NETWORK (address and tx hashes in
-   DEPLOYMENTS.md); attestation and disclosure verified end to end.
+5. *Public network*: registry deployed on **Midnight Preview** at
+   `170ed2cd17ff93d221465f39d7be1b54618df761622952f0df3f03af7edacca8`; accreditation,
+   tool registration, attestation (block 1262094) and disclosure verification all
+   done on Preview, with explorer links in DEPLOYMENTS.md. Preprod deployment in progress.
 6. *Docs*: privacy boundary table, threat model mapping each attack to its
    circuit assertion and test, demo script, deck.
 

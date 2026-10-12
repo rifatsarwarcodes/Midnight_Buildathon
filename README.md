@@ -79,10 +79,14 @@ Tear it down with `npm run devnet:down`.
 
 ### Public network
 
-The registry is deployed on Midnight **Preprod**; see [DEPLOYMENTS.md](DEPLOYMENTS.md)
-for the contract address, transaction hashes and the hosted front end. To
+The registry is deployed on Midnight **Preview** at
+`170ed2cd17ff93d221465f39d7be1b54618df761622952f0df3f03af7edacca8`
+([explorer](https://preview.midnightexplorer.com/contracts/170ed2cd17ff93d221465f39d7be1b54618df761622952f0df3f03af7edacca8)),
+with an accredited auditor, a registered tool and a live attestation. See
+[DEPLOYMENTS.md](DEPLOYMENTS.md) for every transaction hash. A Preprod deployment
+is in progress. To
 transact from the front end you need the Lace wallet with Midnight enabled, some
-tNIGHT from the [Preprod faucet](https://midnight-tmnight-preprod.nethermind.dev/),
+tNIGHT from the [Preview faucet](https://midnight-tmnight-preview.nethermind.dev/),
 and a proof server (Lace's local proof server setting, or `docker run -p 6300:6300 midnightntwrk/proof-server:8.1.3 midnight-proof-server -v`).
 Verification pages work with no wallet at all.
 
@@ -169,7 +173,7 @@ inside `callTx`.
 
 ## Roadmap
 
-- **Wave 2 (this submission)**: contract, tests, CLI, devnet run, Preprod
+- **Wave 2 (this submission)**: contract, tests, CLI, devnet run, Preview
   deployment, browser front end with Lace, docs.
 - **Wave 3**: intersectional audits (14 LL144 categories) via a 16-slot circuit;
   on-chain disclosure receipts (regulator acknowledges an opening); employer
