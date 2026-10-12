@@ -17,9 +17,10 @@ ui/dist/
 *-state/
 cli/disclosures/
 
-# environment and OS
+# environment and OS (ui/.env is public build config and is committed on purpose)
 .env
 .env.*
+!ui/.env
 .DS_Store
 *.log
 

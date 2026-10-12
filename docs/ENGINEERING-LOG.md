@@ -232,6 +232,18 @@ now builds Preprod URLs from `BLOCKFROST_PROJECT_ID`; a Blockfrost "Midnight
 Preprod" project (free sign-up) is required before a Preprod deployment can be
 attempted. Preprod is optional for Wave 2 since Preview is a public network.
 
+**Failure 13: GitHub Pages workflow failed at `midnightntwrk/setup-compact-action`**
+(three runs, 16 s each) while the same action passes in `ci.yml`. The Pages
+workflow runs with a restricted `permissions` block, which the action's release
+lookup or cache step does not tolerate. Fix: install Compact in that workflow
+with the official installer script and `compact update 0.31.1`. Build and deploy
+then succeeded.
+
+**Failure 14: the published site showed "No registry address configured".**
+The root `.gitignore` excluded all `.env` files, so `ui/.env` (public Preview
+endpoints and contract address, no secrets) was never committed and CI built
+without it. Fix: `!ui/.env` in `.gitignore`; `ui/.env.local` stays ignored.
+
 ## 8. Open items
 
 | Item | Owner | Status |
