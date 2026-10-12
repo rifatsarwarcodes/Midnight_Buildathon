@@ -219,6 +219,19 @@ and are what `DEPLOYMENTS.md` links. The UI only renders an explorer link for
 accreditAuditor, registerTool: about 40 s each including proof and inclusion.
 attestAudit: about 70 s. Blocks on Preview are roughly 6 s apart.
 
+**Failure 12: Preprod sync produced 26 `Wallet.Sync` errors and zero progress.**
+Direct probe of `indexer.preprod.midnight.network` returned: "decommissioned on
+2026-10-09. The Midnight indexer is now provided by Blockfrost." The official
+"Networks and environments" guide confirms: Midnight-hosted Preprod indexer and
+RPC shut down at 22:00 UTC on 9 October 2026 (mainnet's on 30 September); Preprod
+and Mainnet are now served by Blockfrost and every request needs a per-network
+project token (`?project_id=<token>`). **Preview endpoints remain Midnight-hosted
+and token-free**, which is why the Preview deployment worked. The create-mn-app
+scaffold (0.5.1) still ships the retired Preprod URLs. Fix: `cli/src/network.ts`
+now builds Preprod URLs from `BLOCKFROST_PROJECT_ID`; a Blockfrost "Midnight
+Preprod" project (free sign-up) is required before a Preprod deployment can be
+attempted. Preprod is optional for Wave 2 since Preview is a public network.
+
 ## 8. Open items
 
 | Item | Owner | Status |
@@ -226,7 +239,7 @@ attestAudit: about 70 s. Blocks on Preview are roughly 6 s apart.
 | Restart Docker Desktop, start proof-server 8.1.3 on port 6300 | user (machine owner) | pending |
 | Re-run `npm run deploy -- --network preview` | agent | done 2026-10-12 |
 | Preview: accredit, register, attest, verify, tampered packet | agent | done 2026-10-12 |
-| Preprod deploy, same flow | agent + user funds `mn_addr_preprod16tr…ngjv` | sync running |
+| Preprod deploy, same flow | needs a Blockfrost Midnight Preprod project id from the user, then faucet funding | blocked on token |
 | Fill `DEPLOYMENTS.md`, `ui/.env` contract address, `docs/SUBMISSION.md` links | agent | done for Preview |
 | Add `midnightntwrk` and other GitHub topics | user (no token on this machine) | pending |
 | Record the demo video from `docs/DEMO.md` | user | pending |

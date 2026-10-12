@@ -59,5 +59,8 @@ Note on transaction ids: Midnight.js returns a 33-byte transaction *identifier*
 
 ## Midnight Preprod
 
-_In progress: wallet sync running; deployment follows once the Preprod wallet
-`mn_addr_preprod16trexelxj0x2rs79u3j8a6zw7yfjfk4glz3qlme74armmskxjlwqhzngjv` is funded._
+_Not yet deployed._ Midnight retired its Preprod indexer and RPC on 2026-10-09;
+Preprod is now served by Blockfrost and needs a project token
+(`BLOCKFROST_PROJECT_ID`). The CLI supports it; deployment will follow once a
+token is available and the Preprod wallet
+`mn_addr_preprod16trexelxj0x2rs79u3j8a6zw7yfjfk4glz3qlme74armmskxjlwqhzngjv` is funded.

@@ -48,6 +48,12 @@ export interface NetworkState {
 export const STATE_FILE_NAME = '.midnight-state.json';
 export const STATE_VERSION = 1 as const;
 
+function withBlockfrostKey(url: string): string {
+  const token = process.env.BLOCKFROST_PROJECT_ID?.trim();
+  if (!token) return url; // resolveNetwork() reports the missing token for preprod
+  return `${url}${url.includes('?') ? '&' : '?'}project_id=${encodeURIComponent(token)}`;
+}
+
 export const NETWORK_CONFIGS: Record<NetworkId, NetworkConfig> = {
   undeployed: {
     networkId: 'undeployed',
@@ -67,11 +73,14 @@ export const NETWORK_CONFIGS: Record<NetworkId, NetworkConfig> = {
     faucet: 'https://midnight-tmnight-preview.nethermind.dev',
     composeServices: ['proof-server'],
   },
+  // Midnight retired its own Preprod indexer and RPC on 2026-10-09. Blockfrost now
+  // serves them and every request needs a Midnight Preprod project token, passed as
+  // ?project_id=<token>. Set BLOCKFROST_PROJECT_ID (gitignored .env) to use preprod.
   preprod: {
     networkId: 'preprod',
-    indexer:   'https://indexer.preprod.midnight.network/api/v4/graphql',
-    indexerWS: 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws',
-    node:      'https://rpc.preprod.midnight.network',
+    indexer:   withBlockfrostKey('https://midnight-preprod.blockfrost.io/api/v0'),
+    indexerWS: withBlockfrostKey('wss://midnight-preprod.blockfrost.io/api/v0/ws'),
+    node:      withBlockfrostKey('https://rpc.midnight-preprod.blockfrost.io'),
     proofServer: 'http://127.0.0.1:6300',
     faucet: 'https://midnight-tmnight-preprod.nethermind.dev',
     composeServices: ['proof-server'],
@@ -203,6 +212,13 @@ export function resolveNetwork(opts: ResolveOptions = {}): ResolveResult {
   }
 
   const config = applyEnvOverrides(NETWORK_CONFIGS[network], env);
+  if (network === 'preprod' && !env.BLOCKFROST_PROJECT_ID?.trim() && !env.MIDNIGHT_INDEXER_URL) {
+    throw new Error(
+      'preprod needs a Blockfrost Midnight Preprod project token: set BLOCKFROST_PROJECT_ID ' +
+        '(see https://docs.midnight.network/guides/networks-and-environments). ' +
+        'Midnight retired indexer.preprod.midnight.network on 2026-10-09.',
+    );
+  }
   return { network, config, source };
 }
 
