@@ -1,0 +1,52 @@
+name: Deploy UI to GitHub Pages
+
+# Builds the front end against the Preview registry (ui/.env) and publishes it.
+# Requires Pages to be enabled on the repository with "GitHub Actions" as the source.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: midnightntwrk/setup-compact-action@v1
+        with:
+          compact-version: '0.31.1'
+      - run: npm ci --no-audit --no-fund
+      - name: Compile contract (keys and zkir are served next to the page)
+        run: npm run compile
+      - name: Build UI
+        run: npm run build -w ui
+        env:
+          # Served from https://<user>.github.io/Midnight_Buildathon/
+          VITE_BASE: /Midnight_Buildathon/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ui/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

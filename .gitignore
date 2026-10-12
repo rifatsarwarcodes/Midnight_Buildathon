@@ -28,3 +28,4 @@ research/
 
 # local role identities (admin/employer/auditor secrets)
 cli/.fairgate-identities.json
+ui/.env.local.devnet

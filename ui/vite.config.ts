@@ -5,6 +5,8 @@ import wasm from 'vite-plugin-wasm';
 // Mirrors the configuration of the official midnight-leaderboard example, which is
 // the reference for running Midnight.js 4.1.x and the onchain-runtime WASM in Vite.
 export default defineConfig({
+  // GitHub Pages serves the site under /<repo>/; local builds use '/'.
+  base: process.env.VITE_BASE ?? '/',
   cacheDir: './.vite',
   build: {
     target: 'esnext',
