@@ -26,9 +26,14 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - uses: midnightntwrk/setup-compact-action@v1
-        with:
-          compact-version: '0.31.1'
+      # The setup-compact-action fails under this workflow's restricted permissions,
+      # so install the toolchain with the official installer instead.
+      - name: Install Compact 0.31.1
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/compact" update 0.31.1
+          "$HOME/.local/bin/compact" compile --version
       - run: npm ci --no-audit --no-fund
       - name: Compile contract (keys and zkir are served next to the page)
         run: npm run compile
