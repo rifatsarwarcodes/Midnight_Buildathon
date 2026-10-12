@@ -12,7 +12,7 @@ Links
 - Deployments, addresses and tx hashes: https://github.com/rifatsarwarcodes/Midnight_Buildathon/blob/main/DEPLOYMENTS.md
 - Deck: https://github.com/rifatsarwarcodes/Midnight_Buildathon/blob/main/docs/deck/fairgate-deck.pdf
 - Demo video: VIDEO_URL
-- Front end: UI_URL
+- Front end (live, reads the Preview registry, no wallet needed): https://rifatsarwarcodes.github.io/Midnight_Buildathon/
 - CI (compiles with Compact 0.31.1, 40 tests): https://github.com/rifatsarwarcodes/Midnight_Buildathon/actions
 
 **The problem.** NYC Local Law 144 and the EU AI Act require bias audits of

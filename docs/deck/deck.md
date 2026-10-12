@@ -106,7 +106,7 @@ Twelve hand-crafted workbooks in the test-suite, each refused by an assertion:
 - **Local devnet**: deploy → accredit → register → attest → verify in under two minutes; attestation proof lands in ~33 s.
 - **Preprod**: registry deployed, see `DEPLOYMENTS.md` for addresses and transaction hashes.
 - **CLI**: `admin accredit`, `employer register`, `auditor attest`, `verify tool | attestation | disclosure`.
-- **Browser**: Verify (no wallet), Auditor workbench with private/public split, Employer, Regulator packet verifier, Admin. Lace wallet via DApp Connector 4.x; reads the ledger straight from the indexer.
+- **Browser**: Verify (no wallet), Auditor workbench with private/public split, Employer, Regulator packet verifier, Admin. Lace wallet via DApp Connector 4.x; reads the ledger straight from the indexer. Live: https://rifatsarwarcodes.github.io/Midnight_Buildathon/
 - A tampered disclosure packet fails verification; an honest one reproduces both the commitment and the attested floor.
 
 ---

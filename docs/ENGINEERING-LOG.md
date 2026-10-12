@@ -255,7 +255,7 @@ without it. Fix: `!ui/.env` in `.gitignore`; `ui/.env.local` stays ignored.
 | Fill `DEPLOYMENTS.md`, `ui/.env` contract address, `docs/SUBMISSION.md` links | agent | done for Preview |
 | Add `midnightntwrk` and other GitHub topics | user (no token on this machine) | pending |
 | Record the demo video from `docs/DEMO.md` | user | pending |
-| Host the UI: GitHub Pages workflow committed; user must enable Pages (source: GitHub Actions) | user | pending |
+| Host the UI on GitHub Pages | agent | done: https://rifatsarwarcodes.github.io/Midnight_Buildathon/ |
 | Lace end-to-end test of the UI on Preview (needs the user's Lace wallet) | user, then agent fixes | pending |
 | Demo video per docs/DEMO.md | user | pending |
 | AKINDO submission text: fill video and UI URLs | agent | pending on the above |
