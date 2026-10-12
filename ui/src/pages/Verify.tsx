@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useState } from 'react';
-import { Badge, Card, Hex, Notice } from '../components/common';
+import { Badge, Card, Hex, Notice, Redacted } from '../components/common';
 import { isActive, type RegistrySnapshot, type ToolRow } from '../lib/registry';
 import { explorerContractUrl } from '../config';
 
@@ -50,9 +50,16 @@ export function VerifyPage({ snapshot, error }: { snapshot: RegistrySnapshot | n
                 <span>counts commit</span><span><Hex value={hex(match.latest.attestation.countsCommit)} /></span>
               </>)}
             </div>
+            <h4>Not on the ledger, by design</h4>
+            <div className="kv">
+              <span>applicants</span><span><Redacted label="per group" size="w2" /></span>
+              <span>selected</span><span><Redacted label="per group" size="w2" /></span>
+              <span>groups excluded</span><span><Redacted label="which ones" /></span>
+              <span>reference group</span><span><Redacted label="identity and counts" size="w3" /></span>
+            </div>
             <p className="muted small">
-              What you cannot see here, by design: how many people applied, how many were selected, and the breakdown by group.
-              Those counts are committed to, not published. A regulator can ask the auditor to open the commitment.
+              These are committed to, not published. A regulator can ask the auditor to open the commitment and check it
+              against the counts commitment above.
             </p>
           </div>
         )}

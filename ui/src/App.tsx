@@ -11,56 +11,73 @@ import { AdminPage } from './pages/Admin';
 
 type Tab = 'verify' | 'auditor' | 'employer' | 'regulator' | 'admin';
 
-const TABS: { id: Tab; label: string; hint: string }[] = [
-  { id: 'verify', label: 'Verify', hint: 'candidates, journalists, anyone' },
-  { id: 'auditor', label: 'Auditor', hint: 'prove the four-fifths rule' },
-  { id: 'employer', label: 'Employer', hint: 'register a hiring tool' },
-  { id: 'regulator', label: 'Regulator', hint: 'open a disclosure' },
-  { id: 'admin', label: 'Admin', hint: 'accredit auditors' },
+const TABS: { id: Tab; n: string; label: string; hint: string }[] = [
+  { id: 'verify', n: '01', label: 'Verify', hint: 'anyone, no wallet' },
+  { id: 'auditor', n: '02', label: 'Auditor', hint: 'prove the four-fifths rule' },
+  { id: 'employer', n: '03', label: 'Employer', hint: 'register a hiring tool' },
+  { id: 'regulator', n: '04', label: 'Regulator', hint: 'open a disclosure' },
+  { id: 'admin', n: '05', label: 'Admin', hint: 'accredit auditors' },
 ];
 
+const tabFromUrl = (): Tab => {
+  const t = new URLSearchParams(window.location.search).get('tab');
+  return TABS.some((x) => x.id === t) ? (t as Tab) : 'verify';
+};
+
 export default function App() {
-  const [tab, setTab] = useState<Tab>('verify');
+  const [tab, setTabState] = useState<Tab>(tabFromUrl);
+  const setTab = (t: Tab) => {
+    setTabState(t);
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', t);
+    window.history.replaceState(null, '', url);
+  };
   const { snapshot, error } = useRegistry();
 
   return (
     <div className="app">
-      <header className="top">
-        <div className="brand">
-          <span className="logo" aria-hidden>◐</span>
-          <div>
-            <h1>FairGate</h1>
-            <p>Zero-knowledge bias-audit attestations for automated hiring tools</p>
-          </div>
+      <header className="masthead reveal" data-i="1">
+        <div>
+          <div className="kicker">Case file · Midnight {config.networkId} · bias-audit attestations</div>
+          <h1>Fair<em>Gate</em></h1>
+          <p className="sub">
+            A hiring algorithm proves it passed the four-fifths rule. The verdict goes on the ledger.
+            The applicants never do.
+          </p>
         </div>
-        <div className="net">
-          <span className={`pill net-${config.networkId}`}>{config.networkId}</span>
-          {snapshot ? <span className="pill ok">registry online</span> : <span className="pill warn">{error ? 'registry unreachable' : 'loading…'}</span>}
+        <div className="ticker">
+          <div className="row"><span className={`lamp ${snapshot ? 'on' : error ? 'off' : ''}`} /> <span className="net">{config.networkId}</span></div>
+          <div className="row">{snapshot ? `registry online · ${snapshot.toolCount} tools · ${snapshot.attestationCount} attestations` : error ? 'registry unreachable' : 'reading the ledger…'}</div>
+          {snapshot && <div className="row">policy ≥ {snapshot.policy.thresholdPct.toString()}% · groups ≥ {snapshot.policy.minGroupSize.toString()} · audits ≥ {snapshot.policy.minTotalApplicants.toString()}</div>}
         </div>
       </header>
 
-      <nav className="tabs">
-        {TABS.map((t) => (
-          <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => setTab(t.id)}>
-            <span>{t.label}</span>
-            <small>{t.hint}</small>
-          </button>
-        ))}
-      </nav>
+      <div className="dossier">
+        <nav className="index reveal" data-i="2" aria-label="Sections">
+          {TABS.map((t) => (
+            <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => setTab(t.id)}>
+              <span className="n">{t.n}</span>
+              <span className="t">{t.label}</span>
+              <span className="h">{t.hint}</span>
+            </button>
+          ))}
+        </nav>
 
-      <main>
-        {tab === 'verify' && <VerifyPage snapshot={snapshot} error={error} />}
-        {tab === 'auditor' && <AuditorPage snapshot={snapshot} />}
-        {tab === 'employer' && <EmployerPage snapshot={snapshot} />}
-        {tab === 'regulator' && <RegulatorPage snapshot={snapshot} />}
-        {tab === 'admin' && <AdminPage snapshot={snapshot} />}
-      </main>
+        <main className="reveal" data-i="3" key={tab}>
+          {tab === 'verify' && <VerifyPage snapshot={snapshot} error={error} />}
+          {tab === 'auditor' && <AuditorPage snapshot={snapshot} />}
+          {tab === 'employer' && <EmployerPage snapshot={snapshot} />}
+          {tab === 'regulator' && <RegulatorPage snapshot={snapshot} />}
+          {tab === 'admin' && <AdminPage snapshot={snapshot} />}
+        </main>
+      </div>
 
-      <footer>
+      <footer className="reveal" data-i="4">
+        <div className="motto">The proof is public. The people are private.</div>
         <p>
           Built on <a href="https://midnight.network" target="_blank" rel="noreferrer">Midnight</a> with Compact.
-          The four-fifths rule is from the EEOC Uniform Guidelines (29 CFR 1607.4(D)), the standard used for
-          NYC Local Law 144 bias audits. Source: <a href="https://github.com/rifatsarwarcodes/Midnight_Buildathon" target="_blank" rel="noreferrer">github.com/rifatsarwarcodes/Midnight_Buildathon</a>
+          The four-fifths rule is the EEOC Uniform Guidelines test (29 CFR 1607.4(D)) used for NYC Local Law 144 bias audits.
+          Source and engineering log: <a href="https://github.com/rifatsarwarcodes/Midnight_Buildathon" target="_blank" rel="noreferrer">github.com/rifatsarwarcodes/Midnight_Buildathon</a>
         </p>
       </footer>
     </div>

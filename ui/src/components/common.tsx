@@ -24,6 +24,15 @@ export function Hex({ value, full = false }: { value: string; full?: boolean }) 
   );
 }
 
+/** A value that exists but is not on the ledger. Rendered as a redaction bar. */
+export function Redacted({ label, size = '' }: { label: string; size?: '' | 'w2' | 'w3' }) {
+  return (
+    <span title="private: never written to the ledger">
+      <span className={`redact ${size}`} aria-label={`${label} (redacted)`} /> <span className="muted small">{label}</span>
+    </span>
+  );
+}
+
 export function Badge({ kind, children }: { kind: 'ok' | 'warn' | 'bad' | 'muted'; children: ReactNode }) {
   return <span className={`badge badge-${kind}`}>{children}</span>;
 }

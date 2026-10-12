@@ -244,6 +244,21 @@ The root `.gitignore` excluded all `.env` files, so `ui/.env` (public Preview
 endpoints and contract address, no secrets) was never committed and CI built
 without it. Fix: `!ui/.env` in `.gitignore`; `ui/.env.local` stays ignored.
 
+## 7b. Front-end redesign (Oct 12)
+
+Replaced the generic light dashboard with a "dossier" design: dark ink surfaces
+with paper-toned type, a single acid verdict colour (`#c8ff3d`) with oxblood for
+failures and a seal amber for warnings, Young Serif for display text, Source
+Serif 4 for prose and Martian Mono for anything the ledger stores. Layout is a
+sticky case-file index on the left and sheets on the right; the masthead carries
+a live ticker read from the indexer. Private values are drawn as animated
+redaction bars next to their labels, so the privacy boundary is visible on the
+Verify and Auditor pages rather than described. Motion is limited to one
+staggered page-load reveal, a rubber-stamp animation on verdict badges and a
+sweep on hex values. Tabs are deep-linkable with `?tab=auditor` etc. Verified
+with headless-Chrome screenshots at 1400 px; fixed two issues found there
+(narrow group-name inputs, invisible preset buttons).
+
 ## 8. Open items
 
 | Item | Owner | Status |

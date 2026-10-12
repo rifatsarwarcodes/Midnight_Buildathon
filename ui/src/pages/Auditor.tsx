@@ -10,7 +10,7 @@ import {
   pureCircuits,
   type GroupCounts,
 } from '../../../contract/src/index.ts';
-import { Badge, Card, EvaluationTable, Hex, Notice, Receipt, Spinner, errorMessage } from '../components/common';
+import { Badge, Card, EvaluationTable, Hex, Notice, Receipt, Spinner, Redacted, errorMessage } from '../components/common';
 import type { RegistrySnapshot } from '../lib/registry';
 import { userPk } from '../lib/identity';
 import { openRegistry, receiptOf, type TxReceipt } from '../lib/wallet';
@@ -196,10 +196,10 @@ export function AuditorPage({ snapshot }: { snapshot: RegistrySnapshot | null })
           <div className="pane private">
             <h5>Private (never leaves this browser)</h5>
             <ul>
-              <li>applicants and selections per group</li>
-              <li>which groups were excluded as too small</li>
-              <li>the reference group</li>
-              <li>the commitment nonce</li>
+              <li><Redacted label="applicants and selections per group" size="w2" /></li>
+              <li><Redacted label="which groups were excluded as too small" size="w2" /></li>
+              <li><Redacted label="the reference group" size="w2" /></li>
+              <li><Redacted label="the commitment nonce" size="w3" /></li>
             </ul>
           </div>
           <div className="pane public">
